@@ -31,3 +31,5 @@ mandando os corajosos astronautas no foguete Power Forza One, para encontrar out
 **Sistema de Vida**: Será uma barra de vida, que irá diminuir de acordo que bater nos corpos celestes.
 
 **Jogo acaba**: Será quando a barra de vida chegar a 0 
+
+![](diagram.png)
