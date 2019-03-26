@@ -112,19 +112,40 @@ local function createAsteroid()
     newAsteroid:setLinearVelocity( math.random( -30,20 ), math.random( 120,190 ) )
 end
 
+--sempre inicia com esse valor padrão
+local positionRocket = display.contentCenterX
+local contadorDeFluxo = 0
 
 local function gameLoop()
-    createAsteroid()
-    score = score + 2
-    updateText()
+    if (contadorDeFluxo % 10 == 0) then
+        print('entrou')
+        createAsteroid()
+        score = score + 2
+        updateText()
+    end
+    print(contadorDeFluxo % 10 == 0)
+    contadorDeFluxo = contadorDeFluxo +1
+    
+    
+    if (rocket.x > positionRocket) then
+        rocket.rotation = 20
+    elseif (rocket.x < positionRocket) then
+        rocket.rotation = -20
+    elseif (rocket.x == positionRocket) then
+        rocket.rotation = 0
+    end
+    positionRocket = rocket.x
+    
+    --rocket:rotate(12)
+    
 end
 
 
-local temp = 750
+local tempo = 100
 
 
 
-gameLoopTimer = timer.performWithDelay( temp, gameLoop, 0 )
+gameLoopTimer = timer.performWithDelay( tempo, gameLoop, 0 )
 
 
 rocket:addEventListener( "touch", dragRocket )
