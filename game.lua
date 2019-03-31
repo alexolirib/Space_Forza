@@ -1,13 +1,17 @@
+local composer = require("composer")
+local scene = composer.newScene()
+
 --adicionando a fisica
 local physics = require( "physics" )
 physics.start()
 physics.setGravity( 0, 0 )
-
-math.randomseed(os.time())
-
 local score = 0
 
 local life = 3
+
+local background
+local background2
+
 
 local gameLoopTimer
 local scoreText
@@ -24,30 +28,7 @@ nome_image={
 
 }
 
-local sheetOptions =
-{
-    frames =
-    {
-        {   -- 1) asteroid 1
-            x = 0,
-            y = 0,
-            width = 102,
-            height = 85
-        },
-        {   -- 2) asteroid 2
-            x = 0,
-            y = 85,
-            width = 90,
-            height = 83
-        },
-        {   -- 3) asteroid 3
-            x = 0,
-            y = 168,
-            width = 100,
-            height = 97
-        },
-    },
-}
+
 
 local borderLeft = display.newRect( 1, 0, 41.5, 1000 )
 
@@ -60,67 +41,19 @@ borderRight:setFillColor(0,0,0)
 physics.addBody(borderLeft, "static")
 physics.addBody(borderRight, "static")
 
-local objectSheet = graphics.newImageSheet( "image/gameObjects.png", sheetOptions )
-
-
-local background = display.newImageRect( backGroup, "image/background3.jpg", 360, 580 )
-background.x = display.contentCenterX
-background.y = display.contentCenterY
-background.xScale = 1.0
-background.yScale = 1.0
-
-local background2 = display.newImageRect( backGroup, "image/background3.jpg", 360, 580 )
-background2.x = display.contentCenterX
-background2.y = -display.contentCenterY
-background2.xScale = 1.0
-background2.yScale = 1.0
-
 local scrollSpeed = 3
-print(display.contentCenterY)
 
-heightScreen =background.contentHeight
-local function move( event )
-    -- print(background.y)
+heightScreen =580
+local function move_loop( event )
    background.y = background.y + scrollSpeed
      background2.y = background2.y + scrollSpeed
-    -- print(background2.y)
-    --if ( fun ) then
-        --local tDelta = event.time - tPrevious
         if ( background.y - heightScreen / 2 > heightScreen ) then
             background:translate( 0, -background.contentHeight * 2 )
         end
         if ( background2.y - heightScreen / 2 > heightScreen ) then
             background2:translate( 0, -background2.contentHeight * 2 )
         end
-    --end
-    -- background:translate( 0, -10 )
 end
-
-
- timer.performWithDelay(20, move, 0)
--- move()
--- background2:translate( 0, 100 )
-
--- background:translate( 0, -background.contentHeight * 2 )
-
-
-
-
-rocket = display.newImageRect(mainGroup, "./image/power_force_one.png",60,60)
-rocket.x = display.contentCenterX
-rocket.y = display.contentHeight - 60
-rocket.isBodyActive = true
-rocket.touchOffsetX = 0
-rocket.touchOffsetY = 0
-
-physics.addBody( rocket, 'dynamic', { radius=30, isSensor=true } )
-rocket.myName = nome_image.rocket
-
-scoreText = display.newText( "Score: " .. score, 240, 25, native.systemFont, 16 )
-
-scoreText:setFillColor(0.180, 0.65, 0.35  )
-
-
 
 local function updateText()
     scoreText.text = "Score: " .. score
@@ -133,16 +66,12 @@ local function dragRocket( event )
     local rocket = event.target
     local phase = event.phase
 
-
-    --inicio do toque
     if ( "began" == phase ) then
-        -- focar na nave
         display.currentStage:setFocus( rocket )
 
         rocket.touchOffsetX = event.x - rocket.x
         rocket.touchOffsetY = event.y - rocket.y
     elseif ( "moved" == phase ) then
-        -- Move the rocket to the new touch position
 
         rocket.x = event.x - rocket.touchOffsetX
         if (rocket.x > 270) then
@@ -157,6 +86,7 @@ local function dragRocket( event )
             rocket.y = 68
         end
     elseif ( "ended" == phase or "cancelled" == phase ) then
+
         -- deixar de focar
         display.currentStage:setFocus( nil )
     end
@@ -165,10 +95,13 @@ local function dragRocket( event )
 end
 
 
+local function endGame()
+    composer.gotoScene( "menu", { time=250, effect="fade" } )
+end
+
 local asteroidTable = {}
 local recover_lifeTable = {}
 local velocidadeDoFluxo = 10
---sempre inicia com esse valor padrão
 local positionRocket = display.contentCenterX
 local contadorDeFluxo = 0
 
@@ -185,7 +118,17 @@ end
 
 local function createAsteroid()
 
-    local newAsteroid = display.newImageRect( mainGroup, objectSheet, 1, 40, 60 )
+    local newAsteroid
+    local choose_asteroid = math.random(0,100)    
+    local size = math.random(35,55)
+
+    if (choose_asteroid >66) then
+        newAsteroid = display.newImageRect( mainGroup, "./image/asteroid3.png", size, size )
+    elseif (choose_asteroid >33)  then
+        newAsteroid = display.newImageRect( mainGroup, "./image/asteroid2.png", size, size )
+    else
+        newAsteroid = display.newImageRect( mainGroup, "./image/asteroid.png", size, size )
+    end    
     table.insert(asteroidTable, newAsteroid)
     physics.addBody( newAsteroid, "dynamic", { radius=30, bounce=0.8 } )
     newAsteroid.myName = nome_image.asteroid
@@ -234,6 +177,9 @@ local function verificarVida()
     else
         
         display.remove(barra_vida)
+        display.remove(rocket)
+        display.remove(scoreText)
+        endGame()
         
     end
 end
@@ -251,13 +197,11 @@ local function gameLoop()
         createAsteroid()
         score = score + 2
         updateText()
-        if ( math.random( -20,100 ) > 90) then
+        if ( math.random( -20,100 ) > 91) then
             createRecovers_life()
         end
     end
     contadorDeFluxo = contadorDeFluxo +1
-
-
 
     if (rocket.x > positionRocket) then
         rocket.rotation = 23
@@ -272,17 +216,6 @@ local function gameLoop()
     --rocket:rotate(12)
 
 end
-
-
-local tempo = 100
-
-
-
-gameLoopTimer = timer.performWithDelay( tempo, gameLoop, 0 )
-
-
-rocket:addEventListener( "touch", dragRocket )
-
 
 local function onCollision( event )
 
@@ -362,4 +295,97 @@ local function onCollision( event )
     end
 
 end
-Runtime:addEventListener( "collision", onCollision )
+-- Runtime:addEventListener( "collision", onCollision )
+
+
+
+function scene:create(event)
+
+    local sceneGroup = self.view
+ 
+    --aqui fazemos umas pausa para poder criar os objetos na tela
+    physics.pause()  
+
+    --vamos criar grupo de exibição, e inserir no grupo de visualização da cena
+    backGroup = display.newGroup()  
+    sceneGroup:insert( backGroup )  
+
+    mainGroup = display.newGroup()  
+    sceneGroup:insert( mainGroup )   
+
+    background = display.newImageRect( backGroup, "image/background3.jpg", 360, 580 )
+    background.x = display.contentCenterX
+    background.y = display.contentCenterY
+    background.xScale = 1.0
+    background.yScale = 1.0
+
+    background2 = display.newImageRect( backGroup, "image/background3.jpg", 360, 580 )
+    background2.x = display.contentCenterX
+    background2.y = -display.contentCenterY
+    background2.xScale = 1.0
+    background2.yScale = 1.0
+
+
+    rocket = display.newImageRect(mainGroup, "./image/power_force_one.png",60,60)
+    rocket.x = display.contentCenterX
+    rocket.y = display.contentHeight - 60
+    rocket.isBodyActive = true
+    rocket.touchOffsetX = 0
+    rocket.touchOffsetY = 0
+
+    physics.addBody( rocket, 'dynamic', { radius=30, isSensor=true } )
+    rocket.myName = nome_image.rocket
+
+    scoreText = display.newText( "Score: " .. score, 240, 25, native.systemFont, 16 )
+    scoreText:setFillColor(0.180, 0.65, 0.35  )
+
+    rocket:addEventListener( "touch", dragRocket )
+    
+
+end
+
+function scene:show( event )
+ 
+    local sceneGroup = self.view
+    local phase = event.phase
+    
+    --quando a cena está pronta para ser mostrada, logo após que o create ter sido exxecutado
+    if ( phase == "will" ) then
+
+    --ocorre imediatamente após a cena ter sido mostrada
+    elseif ( phase == "did" ) then
+        physics.start()
+
+        Runtime:addEventListener( "collision", onCollision )
+        background_loop_movement = timer.performWithDelay(2, move_loop, 0)
+        gameLoopTimer = timer.performWithDelay( 100, gameLoop, 0 ) 
+        
+    end
+end
+
+function scene:hide( event )
+ 
+    local sceneGroup = self.view
+    local phase = event.phase
+    print("entrou aqui")
+ 
+    -- A primeira chamada ocorre quando a cena está prestes a ser ocultada
+    if ( phase == "will" ) then
+        timer.cancel( gameLoopTimer )
+        timer.cancel( background_loop_movement )
+        print("entrou aqui")
+    -- A segunda chamada ocorre imediatamente após a cena estar totalmente fora da tela.
+    elseif ( phase == "did" ) then
+        Runtime:removeEventListener( "collision", onCollision )
+        physics.pause()
+        print("entrou aqui")
+        composer.removeScene( "game" )
+    end
+end
+
+
+scene:addEventListener( "create", scene )
+scene:addEventListener( "show", scene )
+scene:addEventListener( "hide", scene )
+
+return scene
