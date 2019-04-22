@@ -1,5 +1,7 @@
 local composer = require("composer")
+local jslib = require('joystick')
 local scene = composer.newScene()
+local js
 
 --adicionando a fisica
 local physics = require( "physics" )
@@ -14,6 +16,7 @@ local background2
 
 
 local gameLoopTimer
+local jsLoop
 local scoreText
 local barra_vida = nil
 
@@ -179,6 +182,7 @@ local function verificarVida()
         display.remove(barra_vida)
         display.remove(rocket)
         display.remove(scoreText)
+        display.remove(js)
         endGame()
         
     end
@@ -296,15 +300,116 @@ local function onCollision( event )
 
 end
 -- Runtime:addEventListener( "collision", onCollision )
+function catchTimer( e )
 
+    -- local rocket = event.target
+    -- local phase = event.phase
+
+    -- if ( "began" == phase ) then
+    --     display.currentStage:setFocus( rocket )
+
+    --     rocket.touchOffsetX = event.x - rocket.x
+    --     rocket.touchOffsetY = event.y - rocket.y
+    -- elseif ( "moved" == phase ) then
+
+    --     rocket.x = event.x - rocket.touchOffsetX
+    --     if (rocket.x > 270) then
+    --         rocket.x = 270
+    --     elseif (rocket.x < 49.5) then
+    --         rocket.x = 49.5
+    --     end
+    --     rocket.y = event.y - rocket.touchOffsetY
+    --     if (rocket.y > 468) then
+    --         rocket.y = 468
+    --     elseif (rocket.y < 68) then
+    --         rocket.y = 68
+    --     end
+    -- elseif ( "ended" == phase or "cancelled" == phase ) then
+
+    --     -- deixar de focar
+    --     display.currentStage:setFocus( nil )
+    -- end
+
+    -- return true
+    if (js:getDirection() == 1) then
+        if rocket.x <270 then
+            rocket.x = rocket.x + 10
+        end
+    elseif (js:getDirection() == 2) then
+        if (rocket.y > 68) then    
+            rocket.y = rocket.y - 10
+        end
+    elseif (js:getDirection() == 3) then
+        if (rocket.x > 55) then
+            rocket.x = rocket.x - 10
+        end
+    elseif (js:getDirection() == 4) then
+        if (rocket.y < 468) then
+            rocket.y = rocket.y + 10
+        end
+    end
+
+    	print( "  joystick info: "
+    		.. " dir=" .. js:getDirection()
+    		.. " angle=" .. js:getAngle()
+            .. " dist="..js:getDistance() )
+        
+    	return true
+    end
+-- function onTap(event)
+--     js.x=  event.x
+--     js.y=   event.y
+--     print(event)
+--     local phase = event.phase
+--     if phase == 
+--     print(phase)
+--     print('x -->'.. event.x)
+--     print('y -->'.. event.y)
+
+--     local phase = event.phase
+
+--     if ( "began" == phase ) then
+--         js.x=  event.x
+--         js.y=   event.y
+        
+--     -- elseif ( "moved" == phase ) then
+
+--     --     pr
+        
+--     -- elseif ( "ended" == phase or "cancelled" == phase ) then
+
+        
+--     -- end
+
+--     -- return true
+-- end
+function onTouch(event)
+    local phase = event.phase
+    --print(phase)
+    -- js:activate()
+    if ( "began" == phase ) then
+        js.x=  event.x
+        js.y=   event.y
+    end
+
+end
 
 
 function scene:create(event)
+
+    Runtime:addEventListener( "touch", onTouch )
+    --Runtime:addEventListener( "tap", onTap )
 
     local sceneGroup = self.view
  
     --aqui fazemos umas pausa para poder criar os objetos na tela
     physics.pause()  
+
+    --criando o joystick
+    js = jslib.new( 20, 40 )
+    js.x = -150
+    js.y = -150
+    js:activate()
 
     --vamos criar grupo de exibição, e inserir no grupo de visualização da cena
     backGroup = display.newGroup()  
@@ -339,7 +444,7 @@ function scene:create(event)
     scoreText = display.newText( "Score: " .. score, 240, 25, native.systemFont, 16 )
     scoreText:setFillColor(0.180, 0.65, 0.35  )
 
-    rocket:addEventListener( "touch", dragRocket )
+  --  rocket:addEventListener( "touch", dragRocket )
     
 
 end
@@ -359,6 +464,7 @@ function scene:show( event )
         Runtime:addEventListener( "collision", onCollision )
         background_loop_movement = timer.performWithDelay(2, move_loop, 0)
         gameLoopTimer = timer.performWithDelay( 100, gameLoop, 0 ) 
+        jsLoop = timer.performWithDelay( 50, catchTimer, -1 )
         
     end
 end
@@ -367,12 +473,13 @@ function scene:hide( event )
  
     local sceneGroup = self.view
     local phase = event.phase
-    print("entrou aqui")
  
     -- A primeira chamada ocorre quando a cena está prestes a ser ocultada
     if ( phase == "will" ) then
         timer.cancel( gameLoopTimer )
+        timer.cancel(jsLoop)
         timer.cancel( background_loop_movement )
+        
         print("entrou aqui")
     -- A segunda chamada ocorre imediatamente após a cena estar totalmente fora da tela.
     elseif ( phase == "did" ) then

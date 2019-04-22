@@ -31,6 +31,7 @@ function scene:create( event )
     local btn_h_scores = display.newImageRect( sceneGroup, "image/btn_h_scores.png", 148, 45 )
     btn_h_scores.x = display.contentCenterX
     btn_h_scores.y = position_btn + (dif_btn*2)
+    
 
     btn_play:addEventListener("tap", gotoGame)
 
