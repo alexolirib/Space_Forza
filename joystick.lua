@@ -7,13 +7,13 @@ function Joystick.new( innerRadius, outerRadius )
     
     local bgJoystick = display.newCircle( joyGroup, 0,0, outerRadius )
     bgJoystick:setFillColor( .2,.2,.2 )
-    -- bgJoystick.alpha=0
+    bgJoystick.alpha=0
     
     local radToDeg = 180/math.pi
     local degToRad = math.pi/180
     local joystick = display.newCircle( joyGroup, 0,0, innerRadius )
     joystick:setFillColor( .8,.8,.8 )
-    -- joystick.alpha=0.1
+    joystick.alpha=0.1
 
     -- for easy reference later:
     joyGroup.joystick = joystick
@@ -39,7 +39,7 @@ function Joystick.new( innerRadius, outerRadius )
         local phase = event.phase
         --print(phase)
         if( (phase=='began') or (phase=="moved") ) then
-        	if( phase == 'began' ) then
+        	if( phase == 'moved' ) then
             	stage:setFocus(event.target, event.id)
             end
             local parent = self.parent

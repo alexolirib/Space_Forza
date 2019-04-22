@@ -349,10 +349,10 @@ function catchTimer( e )
         end
     end
 
-    	print( "  joystick info: "
-    		.. " dir=" .. js:getDirection()
-    		.. " angle=" .. js:getAngle()
-            .. " dist="..js:getDistance() )
+    	-- print( "  joystick info: "
+    	-- 	.. " dir=" .. js:getDirection()
+    	-- 	.. " angle=" .. js:getAngle()
+        --     .. " dist="..js:getDistance() )
         
     	return true
     end
@@ -387,6 +387,7 @@ function onTouch(event)
     local phase = event.phase
     --print(phase)
     -- js:activate()
+    print(phase)
     if ( "began" == phase ) then
         js.x=  event.x
         js.y=   event.y
@@ -480,12 +481,10 @@ function scene:hide( event )
         timer.cancel(jsLoop)
         timer.cancel( background_loop_movement )
         
-        print("entrou aqui")
     -- A segunda chamada ocorre imediatamente após a cena estar totalmente fora da tela.
     elseif ( phase == "did" ) then
         Runtime:removeEventListener( "collision", onCollision )
         physics.pause()
-        print("entrou aqui")
         composer.removeScene( "game" )
     end
 end
