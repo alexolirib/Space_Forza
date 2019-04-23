@@ -13,7 +13,7 @@ function Joystick.new( innerRadius, outerRadius )
     local degToRad = math.pi/180
     local joystick = display.newCircle( joyGroup, 0,0, innerRadius )
     joystick:setFillColor( .8,.8,.8 )
-    joystick.alpha=0.1
+    joystick.alpha=0.5
 
     -- for easy reference later:
     joyGroup.joystick = joystick

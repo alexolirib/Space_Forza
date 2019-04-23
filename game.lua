@@ -46,7 +46,7 @@ physics.addBody(borderRight, "static")
 
 local scrollSpeed = 3
 
-heightScreen =580
+heightScreen =display.contentHeight
 local function move_loop( event )
    background.y = background.y + scrollSpeed
      background2.y = background2.y + scrollSpeed
@@ -419,15 +419,15 @@ function scene:create(event)
     mainGroup = display.newGroup()  
     sceneGroup:insert( mainGroup )   
 
-    background = display.newImageRect( backGroup, "image/background3.jpg", 360, 580 )
+    background = display.newImageRect( backGroup, "image/background3.jpg",320, 480 )
     background.x = display.contentCenterX
     background.y = display.contentCenterY
     background.xScale = 1.0
     background.yScale = 1.0
 
-    background2 = display.newImageRect( backGroup, "image/background3.jpg", 360, 580 )
+    background2 = display.newImageRect( backGroup, "image/background3.jpg", 320, 480 )
     background2.x = display.contentCenterX
-    background2.y = -display.contentCenterY
+    background2.y = display.contentCenterY - display.actualContentHeight
     background2.xScale = 1.0
     background2.yScale = 1.0
 
@@ -465,7 +465,7 @@ function scene:show( event )
         Runtime:addEventListener( "collision", onCollision )
         background_loop_movement = timer.performWithDelay(2, move_loop, 0)
         gameLoopTimer = timer.performWithDelay( 100, gameLoop, 0 ) 
-        jsLoop = timer.performWithDelay( 50, catchTimer, -1 )
+        jsLoop = timer.performWithDelay( 30, catchTimer, -1 )
         
     end
 end
