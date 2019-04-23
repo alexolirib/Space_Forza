@@ -419,13 +419,13 @@ function scene:create(event)
     mainGroup = display.newGroup()  
     sceneGroup:insert( mainGroup )   
 
-    background = display.newImageRect( backGroup, "image/background3.jpg",320, 480 )
+    background = display.newImageRect( backGroup, "image/background6.jpg",320, 480 )
     background.x = display.contentCenterX
     background.y = display.contentCenterY
     background.xScale = 1.0
     background.yScale = 1.0
 
-    background2 = display.newImageRect( backGroup, "image/background3.jpg", 320, 480 )
+    background2 = display.newImageRect( backGroup, "image/background6.jpg", 320, 480 )
     background2.x = display.contentCenterX
     background2.y = display.contentCenterY - display.actualContentHeight
     background2.xScale = 1.0
