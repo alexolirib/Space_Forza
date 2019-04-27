@@ -1,5 +1,5 @@
 local composer = require("composer")
-local jslib = require('joystick')
+local jslib = require('src.joystick')
 local scene = composer.newScene()
 local js
 
@@ -99,7 +99,7 @@ end
 
 
 local function endGame()
-    composer.gotoScene( "menu", { time=250, effect="fade" } )
+    composer.gotoScene( "src.menu", { time=250, effect="fade" } )
 end
 
 local asteroidTable = {}
@@ -109,7 +109,7 @@ local positionRocket = display.contentCenterX
 local contadorDeFluxo = 0
 
 local function createRecovers_life()
-    local newRecovers_life = display.newImageRect( mainGroup, "./image/recovers_life.png", 30, 50 )
+    local newRecovers_life = display.newImageRect( mainGroup, "resources/image/recovers_life.png", 30, 50 )
     table.insert(recover_lifeTable, newRecovers_life)
     physics.addBody( newRecovers_life, "dynamic", { radius=30, bounce=0.8 } )
     newRecovers_life.myName = nome_image.recover_life
@@ -126,11 +126,11 @@ local function createAsteroid()
     local size = math.random(35,55)
 
     if (choose_asteroid >66) then
-        newAsteroid = display.newImageRect( mainGroup, "./image/asteroid3.png", size, size )
+        newAsteroid = display.newImageRect( mainGroup, "resources/image/asteroid3.png", size, size )
     elseif (choose_asteroid >33)  then
-        newAsteroid = display.newImageRect( mainGroup, "./image/asteroid2.png", size, size )
+        newAsteroid = display.newImageRect( mainGroup, "resources/image/asteroid2.png", size, size )
     else
-        newAsteroid = display.newImageRect( mainGroup, "./image/asteroid.png", size, size )
+        newAsteroid = display.newImageRect( mainGroup, "resources/image/asteroid.png", size, size )
     end    
     table.insert(asteroidTable, newAsteroid)
     physics.addBody( newAsteroid, "dynamic", { radius=30, bounce=0.8 } )
@@ -162,18 +162,18 @@ local function verificarVida()
 
     if (life ==3) then
         display.remove(barra_vida)
-        barra_vida = display.newImageRect(mainGroup, "./image/green_life_bar.png",120,25)
+        barra_vida = display.newImageRect(mainGroup, "resources/image/green_life_bar.png",120,25)
         barra_vida.x = 90
         barra_vida.y = 25
     elseif(life ==2) then
         display.remove(barra_vida)
-        barra_vida = display.newImageRect(mainGroup, "./image/yellow_life_bar.png",80,25)
+        barra_vida = display.newImageRect(mainGroup, "resources/image/yellow_life_bar.png",80,25)
         barra_vida.x = 70
         barra_vida.y = 25
 
     elseif(life == 1) then        
         display.remove(barra_vida)
-        barra_vida = display.newImageRect(mainGroup, "./image/red_life_bar.png",40,25)
+        barra_vida = display.newImageRect(mainGroup, "resources/image/red_life_bar.png",40,25)
         barra_vida.x = 50
         barra_vida.y = 25
 
@@ -331,21 +331,22 @@ function catchTimer( e )
     -- end
 
     -- return true
+    velocityRocket = 5
     if (js:getDirection() == 1) then
         if rocket.x <270 then
-            rocket.x = rocket.x + 10
+            rocket.x = rocket.x + velocityRocket 
         end
     elseif (js:getDirection() == 2) then
         if (rocket.y > 68) then    
-            rocket.y = rocket.y - 10
+            rocket.y = rocket.y - velocityRocket
         end
     elseif (js:getDirection() == 3) then
         if (rocket.x > 55) then
-            rocket.x = rocket.x - 10
+            rocket.x = rocket.x - velocityRocket 
         end
     elseif (js:getDirection() == 4) then
         if (rocket.y < 468) then
-            rocket.y = rocket.y + 10
+            rocket.y = rocket.y + velocityRocket
         end
     end
 
@@ -387,7 +388,6 @@ function onTouch(event)
     local phase = event.phase
     --print(phase)
     -- js:activate()
-    print(phase)
     if ( "began" == phase ) then
         js.x=  event.x
         js.y=   event.y
@@ -397,7 +397,8 @@ end
 
 
 function scene:create(event)
-
+    
+    print('---criando entrou---')
     Runtime:addEventListener( "touch", onTouch )
     --Runtime:addEventListener( "tap", onTap )
 
@@ -418,21 +419,21 @@ function scene:create(event)
 
     mainGroup = display.newGroup()  
     sceneGroup:insert( mainGroup )   
-
-    background = display.newImageRect( backGroup, "image/background6.jpg",320, 480 )
+    print('---criando background---')
+    background = display.newImageRect( backGroup, "resources/image/background6.jpg",320, 480 )
     background.x = display.contentCenterX
     background.y = display.contentCenterY
     background.xScale = 1.0
     background.yScale = 1.0
 
-    background2 = display.newImageRect( backGroup, "image/background6.jpg", 320, 480 )
+    background2 = display.newImageRect( backGroup, "resources/image/background6.jpg", 320, 480 )
     background2.x = display.contentCenterX
     background2.y = display.contentCenterY - display.actualContentHeight
     background2.xScale = 1.0
     background2.yScale = 1.0
 
-
-    rocket = display.newImageRect(mainGroup, "./image/power_force_one.png",60,60)
+    print('---criando nave---')
+    rocket = display.newImageRect(mainGroup, "resources/image/power_force_one.png",60,60)
     rocket.x = display.contentCenterX
     rocket.y = display.contentHeight - 60
     rocket.isBodyActive = true
@@ -485,7 +486,7 @@ function scene:hide( event )
     elseif ( phase == "did" ) then
         Runtime:removeEventListener( "collision", onCollision )
         physics.pause()
-        composer.removeScene( "game" )
+        composer.removeScene( "src.game" )
     end
 end
 
