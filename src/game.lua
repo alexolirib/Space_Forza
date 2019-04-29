@@ -11,6 +11,9 @@ local score = 0
 
 local life = 3
 
+local planet
+local planet2
+
 local background
 local background2
 
@@ -58,6 +61,18 @@ local function move_loop( event )
         end
 end
 
+scrollSpeed_planet = 0.2
+local function move_loop_planet( event )
+    planet.y = planet.y + scrollSpeed_planet
+    planet2.y = planet2.y + scrollSpeed_planet
+         if ( planet.y - heightScreen / 2 > heightScreen ) then
+            planet:translate( 0, -background.contentHeight * 2 )
+         end
+         if ( planet2.y - heightScreen / 2 > heightScreen ) then
+            planet2:translate( 0, -background.contentHeight * 2 )
+         end
+ end
+
 local function updateText()
     scoreText.text = "Score: " .. score
 end
@@ -99,7 +114,8 @@ end
 
 
 local function endGame()
-    composer.gotoScene( "src.menu", { time=250, effect="fade" } )
+    composer.setVariable('finalScore', score)
+    composer.gotoScene( "src.end_game", { time=250, effect="fade" } )
 end
 
 local asteroidTable = {}
@@ -398,7 +414,6 @@ end
 
 function scene:create(event)
     
-    print('---criando entrou---')
     Runtime:addEventListener( "touch", onTouch )
     --Runtime:addEventListener( "tap", onTap )
 
@@ -418,29 +433,49 @@ function scene:create(event)
     sceneGroup:insert( backGroup )  
 
     mainGroup = display.newGroup()  
-    sceneGroup:insert( mainGroup )   
-    print('---criando background---')
-    background = display.newImageRect( backGroup, "resources/image/background6.jpg",320, 480 )
+    sceneGroup:insert( mainGroup )
+     
+    planet = display.newImageRect( backGroup, "resources/image/planet1.png",220, 220 )
+    planet.x = display.contentCenterX-150
+    planet.y = display.contentCenterY
+    planet.xScale = 1.0
+    planet.yScale = 1.0
+    
+    planet2 = display.newImageRect( backGroup, "resources/image/planet3.png",180, 180 )
+    planet2.x = display.contentCenterX+ 180
+    planet2.y = display.contentCenterY - display.actualContentHeight
+    planet2.xScale = 1.0
+    planet2.yScale = 1.0
+    
+    
+    planet2 = display.newImageRect( backGroup, "resources/image/planet4.png",180, 180 )
+    planet2.x = display.contentCenterX -150
+    planet2.y = display.contentCenterY - display.actualContentHeight
+    planet2.xScale = 1.0
+    planet2.yScale = 1.0
+    
+    background = display.newImageRect( backGroup, "resources/image/background7.jpg",320, 480 )
     background.x = display.contentCenterX
     background.y = display.contentCenterY
     background.xScale = 1.0
     background.yScale = 1.0
+    background:toBack()
 
-    background2 = display.newImageRect( backGroup, "resources/image/background6.jpg", 320, 480 )
+    background2 = display.newImageRect( backGroup, "resources/image/background7.jpg", 320, 480 )
     background2.x = display.contentCenterX
     background2.y = display.contentCenterY - display.actualContentHeight
     background2.xScale = 1.0
-    background2.yScale = 1.0
+    background2.yScale = 1.0    
+    background2:toBack()
 
-    print('---criando nave---')
-    rocket = display.newImageRect(mainGroup, "resources/image/power_force_one.png",60,60)
+    rocket = display.newImageRect(mainGroup, "resources/image/power_force_one2.png",40,60)
     rocket.x = display.contentCenterX
     rocket.y = display.contentHeight - 60
     rocket.isBodyActive = true
     rocket.touchOffsetX = 0
     rocket.touchOffsetY = 0
 
-    physics.addBody( rocket, 'dynamic', { radius=30, isSensor=true } )
+    physics.addBody( rocket, 'dynamic', { radius=25, isSensor=true } )
     rocket.myName = nome_image.rocket
 
     scoreText = display.newText( "Score: " .. score, 240, 25, native.systemFont, 16 )
@@ -465,6 +500,7 @@ function scene:show( event )
 
         Runtime:addEventListener( "collision", onCollision )
         background_loop_movement = timer.performWithDelay(2, move_loop, 0)
+        background_loop_planet_movement = timer.performWithDelay(2, move_loop_planet, 0)
         gameLoopTimer = timer.performWithDelay( 100, gameLoop, 0 ) 
         jsLoop = timer.performWithDelay( 30, catchTimer, -1 )
         
@@ -478,15 +514,22 @@ function scene:hide( event )
  
     -- A primeira chamada ocorre quando a cena está prestes a ser ocultada
     if ( phase == "will" ) then
-        timer.cancel( gameLoopTimer )
         timer.cancel(jsLoop)
+        timer.cancel( gameLoopTimer )
         timer.cancel( background_loop_movement )
+        timer.cancel( background_loop_planet_movement )
+        print('teste')
         
     -- A segunda chamada ocorre imediatamente após a cena estar totalmente fora da tela.
     elseif ( phase == "did" ) then
-        Runtime:removeEventListener( "collision", onCollision )
+        
         physics.pause()
+        Runtime:removeEventListener( "collision", onCollision )
         composer.removeScene( "src.game" )
+        --Runtime:removeEventListener( "collision", onCollision )
+        --physics.pause()
+        --print('entrou aqui')
+        --composer.removeScene( "src.game" )
     end
 end
 

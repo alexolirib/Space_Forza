@@ -6,6 +6,12 @@ local function gotoGame()
     composer.gotoScene( "src.game" , { time=600, effect="zoomInOutFade" })
 end
 
+
+local function gotoHighScore()
+    composer.gotoScene( "src.high_scores" , { time=600, effect="zoomInOutFade" })
+end
+
+
 local position_btn = 280
 local dif_btn = 65
 function scene:create( event )
@@ -34,6 +40,7 @@ function scene:create( event )
     
 
     btn_play:addEventListener("tap", gotoGame)
+    btn_h_scores:addEventListener("tap", gotoHighScore)
 
 
 end
