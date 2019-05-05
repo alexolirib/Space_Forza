@@ -87,11 +87,6 @@ function scene:create( event )
     -- Save the scores
     saveScores()
 
-    print('2ª  -  ' .. pontuacao)
-
-
-
-    
     local background = display.newImageRect( sceneGroup, "resources/image/background3.jpg", 360, 580 )
     background.x = display.contentCenterX
     background.y = display.contentCenterY

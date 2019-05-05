@@ -514,15 +514,20 @@ function scene:hide( event )
  
     -- A primeira chamada ocorre quando a cena está prestes a ser ocultada
     if ( phase == "will" ) then
-        timer.cancel(jsLoop)
-        timer.cancel( gameLoopTimer )
-        timer.cancel( background_loop_movement )
+        
+        print('entrou aqui will')
         timer.cancel( background_loop_planet_movement )
-        print('teste')
+        timer.cancel( background_loop_movement )
+        if (gameLoopTimer) then
+            timer.cancel( gameLoopTimer )
+        end
+        timer.cancel(jsLoop)
         
     -- A segunda chamada ocorre imediatamente após a cena estar totalmente fora da tela.
     elseif ( phase == "did" ) then
         
+
+        print('entrou aqui did')
         physics.pause()
         Runtime:removeEventListener( "collision", onCollision )
         composer.removeScene( "src.game" )
