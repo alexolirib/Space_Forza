@@ -3,6 +3,10 @@ local jslib = require('src.joystick')
 local scene = composer.newScene()
 local js
 
+local musicTrack
+local musicImpact
+local musicLife
+
 --adicionando a fisica
 local physics = require( "physics" )
 physics.start()
@@ -246,7 +250,7 @@ local function onCollision( event )
         if ( ( obj1.myName == nome_image.rocket and obj2.myName == nome_image.asteroid ) or
              ( obj1.myName == nome_image.asteroid and obj2.myName == nome_image.rocket ) )
         then
-            
+            audio.play(musicImpact)
             --obj2 sempre será o rocket
             if (( obj1.myName == nome_image.asteroid and obj2.myName == nome_image.rocket ))
             then
@@ -270,7 +274,6 @@ local function onCollision( event )
             
         elseif (( obj1.myName == nome_image.asteroid and obj2.myName == nome_image.recover_life ) or
         ( obj1.myName == nome_image.recover_life and obj2.myName == nome_image.asteroid )) then
-
         --asteroid será sempre obj1
         if (( obj1.myName == nome_image.asteroid and obj2.myName== nome_image.recover_life )) then
                 obj1 = obj1
@@ -289,6 +292,7 @@ local function onCollision( event )
             end
         elseif (( obj1.myName == nome_image.rocket and obj2.myName == nome_image.recover_life ) or
         ( obj1.myName == nome_image.recover_life and obj2.myName == nome_image.rocket )) then
+            audio.play(musicLife)
 
         --asteroid será sempre obj1
         if (( obj1.myName == nome_image.rocket and obj2.myName== nome_image.recover_life )) then
@@ -429,46 +433,48 @@ function scene:create(event)
     js:activate()
 
     --vamos criar grupo de exibição, e inserir no grupo de visualização da cena
-    backGroup = display.newGroup()  
+    backGroup1 = display.newGroup()  
     sceneGroup:insert( backGroup )  
+    sceneGroup:insert( backGroup1 )
 
-    mainGroup = display.newGroup()  
+    mainGroup1 = display.newGroup()  
     sceneGroup:insert( mainGroup )
+    sceneGroup:insert( mainGroup1)
      
-    planet = display.newImageRect( backGroup, "resources/image/planet1.png",220, 220 )
+    planet = display.newImageRect( backGroup1, "resources/image/planet1.png",220, 220 )
     planet.x = display.contentCenterX-150
     planet.y = display.contentCenterY
     planet.xScale = 1.0
     planet.yScale = 1.0
     
-    planet2 = display.newImageRect( backGroup, "resources/image/planet3.png",180, 180 )
+    planet2 = display.newImageRect( backGroup1, "resources/image/planet3.png",180, 180 )
     planet2.x = display.contentCenterX+ 180
     planet2.y = display.contentCenterY - display.actualContentHeight
     planet2.xScale = 1.0
     planet2.yScale = 1.0
     
     
-    planet2 = display.newImageRect( backGroup, "resources/image/planet4.png",180, 180 )
+    planet2 = display.newImageRect( backGroup1, "resources/image/planet4.png",180, 180 )
     planet2.x = display.contentCenterX -150
     planet2.y = display.contentCenterY - display.actualContentHeight
     planet2.xScale = 1.0
     planet2.yScale = 1.0
     
-    background = display.newImageRect( backGroup, "resources/image/background7.jpg",320, 480 )
+    background = display.newImageRect( backGroup1, "resources/image/background7.jpg",320, 480 )
     background.x = display.contentCenterX
     background.y = display.contentCenterY
     background.xScale = 1.0
     background.yScale = 1.0
     background:toBack()
 
-    background2 = display.newImageRect( backGroup, "resources/image/background7.jpg", 320, 480 )
+    background2 = display.newImageRect( backGroup1, "resources/image/background7.jpg", 320, 480 )
     background2.x = display.contentCenterX
     background2.y = display.contentCenterY - display.actualContentHeight
     background2.xScale = 1.0
     background2.yScale = 1.0    
     background2:toBack()
 
-    rocket = display.newImageRect(mainGroup, "resources/image/power_force_one2.png",40,60)
+    rocket = display.newImageRect(mainGroup1, "resources/image/power_force_one2.png",40,60)
     rocket.x = display.contentCenterX
     rocket.y = display.contentHeight - 60
     rocket.isBodyActive = true
@@ -482,8 +488,10 @@ function scene:create(event)
     scoreText:setFillColor(0.180, 0.65, 0.35  )
 
   --  rocket:addEventListener( "touch", dragRocket )
+    musicTrack = audio.loadSound('resources/music/music_game.mp3')    
+    musicImpact = audio.loadSound('resources/music/explosion.wav')
+    musicLife = audio.loadSound('resources/music/music_life.mp3')
     
-
 end
 
 function scene:show( event )
@@ -503,6 +511,8 @@ function scene:show( event )
         background_loop_planet_movement = timer.performWithDelay(2, move_loop_planet, 0)
         gameLoopTimer = timer.performWithDelay( 100, gameLoop, 0 ) 
         jsLoop = timer.performWithDelay( 30, catchTimer, -1 )
+
+        audio.play( musicTrack, { channel=1, loops=-1 } )
         
     end
 end
@@ -531,6 +541,7 @@ function scene:hide( event )
         physics.pause()
         Runtime:removeEventListener( "collision", onCollision )
         composer.removeScene( "src.game" )
+        audio.stop( 1 )
         --Runtime:removeEventListener( "collision", onCollision )
         --physics.pause()
         --print('entrou aqui')
@@ -538,9 +549,19 @@ function scene:hide( event )
     end
 end
 
+function scene:destroy( event )
+ 
+    local sceneGroup = self.view
+
+    audio.dispose( musicTrack )
+    audio.dispose( musicImpact )
+    audio.dispose( musicLife )
+end
+
 
 scene:addEventListener( "create", scene )
 scene:addEventListener( "show", scene )
 scene:addEventListener( "hide", scene )
+scene:addEventListener( "destroy", scene )
 
 return scene

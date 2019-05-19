@@ -9,6 +9,7 @@ local scoresTable = {}
 
 local filePath = system.pathForFile( "scores.json", system.DocumentsDirectory )
 
+local selectMenuSound
 
 local function loadScores()
 
@@ -39,15 +40,17 @@ local function saveScores()
 	end
 end
 
-
+local musicBack
 
 local function gotoMenu()
+	audio.play(selectMenuSound)
 	composer.gotoScene( "src.menu", { time=400, effect="crossFade" } )
 end
 
 function scene:create( event )
 
-    local sceneGroup = self.view
+	local sceneGroup = self.view
+	
     -- Code here runs when the scene is first created but has not yet appeared on screen
 
     -- Load the previous scores
@@ -89,7 +92,9 @@ function scene:create( event )
     local btn_menu = display.newImageRect( sceneGroup, "resources/image/btn_menu.png", 148, 45 )
 	btn_menu.x = display.contentCenterX
     btn_menu.y = display.contentCenterY + 210
-    btn_menu:addEventListener('tap', gotoMenu)
+	btn_menu:addEventListener('tap', gotoMenu)
+	selectMenuSound = audio.loadSound('resources/musicBack/music_click.mp3')
+	musicBack = audio.loadStream('resources/music/music_menu.mp3')
 end
 
 
@@ -104,6 +109,7 @@ function scene:show( event )
 
 	elseif ( phase == "did" ) then
 		-- Code here runs when the scene is entirely on screen
+		audio.play(musicBack, { channel=1, loops=-1 } )
 
 	end
 end
@@ -121,6 +127,7 @@ function scene:hide( event )
 	elseif ( phase == "did" ) then
 		-- Code here runs immediately after the scene goes entirely off screen
 		composer.removeScene( "src.high_scores" )
+		audio.stop( 1 )
 	end
 end
 
@@ -130,6 +137,9 @@ function scene:destroy( event )
 
 	local sceneGroup = self.view
 	-- Code here runs prior to the removal of scene's view
+	
+	audio.dispose( selectMenuSound )
+	audio.dispose( musicBack )
 
 end
 
