@@ -32,6 +32,7 @@ local gameLoopTimer
 local jsLoop
 local scoreText
 local barra_vida = nil
+local jogo_finalizou = false
 
 
 local backGroup = display.newGroup()
@@ -124,6 +125,7 @@ end
 
 
 local function endGame()
+    print('passando pelo endGame')
     composer.setVariable('finalScore', score)
     composer.gotoScene( "src.end_game", { time=1100, effect="fade" } )
 end
@@ -204,12 +206,14 @@ local function verificarVida()
         barra_vida.y = 25
 
     else
-        
-        display.remove(barra_vida)
-        display.remove(rocket)
-        display.remove(scoreText)
-        display.remove(js)
-        endGame()
+        if not jogo_finalizou then
+            jogo_finalizou = not jogo_finalizou
+            display.remove(barra_vida)
+            display.remove(rocket)
+            display.remove(scoreText)
+            display.remove(js)
+            endGame()
+        end
         
     end
 end
