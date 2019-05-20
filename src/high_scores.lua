@@ -11,6 +11,8 @@ local filePath = system.pathForFile( "scores.json", system.DocumentsDirectory )
 
 local selectMenuSound
 
+local toPlay = true
+
 local function loadScores()
 
 	local file = io.open( filePath, "r" )
@@ -28,6 +30,8 @@ end
 
 local function saveScores()
 
+	
+	
 	for i = #scoresTable, 11, -1 do
 		table.remove( scoresTable, i )
 	end
@@ -43,13 +47,17 @@ end
 local musicBack
 
 local function gotoMenu()
-	audio.play(selectMenuSound)
+	if toPlay then
+		audio.play(selectMenuSound) 
+	end
 	composer.gotoScene( "src.menu", { time=400, effect="crossFade" } )
 end
 
 function scene:create( event )
 
 	local sceneGroup = self.view
+
+	toPlay = composer.getVariable('toPlay')
 	
     -- Code here runs when the scene is first created but has not yet appeared on screen
 
@@ -65,7 +73,6 @@ function scene:create( event )
         return a > b
     end
     table.sort( scoresTable, compare )
-
     -- Save the scores
     saveScores()
 
@@ -93,7 +100,7 @@ function scene:create( event )
 	btn_menu.x = display.contentCenterX
     btn_menu.y = display.contentCenterY + 210
 	btn_menu:addEventListener('tap', gotoMenu)
-	selectMenuSound = audio.loadSound('resources/musicBack/music_click.mp3')
+	selectMenuSound = audio.loadSound('resources/music/music_click.mp3')
 	musicBack = audio.loadStream('resources/music/music_menu.mp3')
 end
 
@@ -109,7 +116,11 @@ function scene:show( event )
 
 	elseif ( phase == "did" ) then
 		-- Code here runs when the scene is entirely on screen
-		audio.play(musicBack, { channel=1, loops=-1 } )
+		if toPlay then
+			audio.play( musicBack, { channel=1, loops=-1 } )
+		else         
+			audio.stop(1)
+		end
 
 	end
 end

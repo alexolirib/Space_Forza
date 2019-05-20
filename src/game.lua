@@ -2,10 +2,16 @@ local composer = require("composer")
 local jslib = require('src.joystick')
 local scene = composer.newScene()
 local js
+local setup_music = require('src.setup_music')
 
 local musicTrack
 local musicImpact
 local musicLife
+local musicGameOver
+
+local toPlay = false
+local imgMusic
+local imgNotMusic
 
 --adicionando a fisica
 local physics = require( "physics" )
@@ -119,7 +125,7 @@ end
 
 local function endGame()
     composer.setVariable('finalScore', score)
-    composer.gotoScene( "src.end_game", { time=250, effect="fade" } )
+    composer.gotoScene( "src.end_game", { time=1100, effect="fade" } )
 end
 
 local asteroidTable = {}
@@ -250,7 +256,13 @@ local function onCollision( event )
         if ( ( obj1.myName == nome_image.rocket and obj2.myName == nome_image.asteroid ) or
              ( obj1.myName == nome_image.asteroid and obj2.myName == nome_image.rocket ) )
         then
-            audio.play(musicImpact)
+            if (toPlay) then
+                if life >1 then
+                    audio.play(musicImpact)
+                else
+                    audio.play(musicGameOver)
+                end
+            end
             --obj2 sempre será o rocket
             if (( obj1.myName == nome_image.asteroid and obj2.myName == nome_image.rocket ))
             then
@@ -292,7 +304,9 @@ local function onCollision( event )
             end
         elseif (( obj1.myName == nome_image.rocket and obj2.myName == nome_image.recover_life ) or
         ( obj1.myName == nome_image.recover_life and obj2.myName == nome_image.rocket )) then
-            audio.play(musicLife)
+            if (toPlay) then
+                audio.play(musicLife)
+            end
 
         --asteroid será sempre obj1
         if (( obj1.myName == nome_image.rocket and obj2.myName== nome_image.recover_life )) then
@@ -377,33 +391,10 @@ function catchTimer( e )
         
     	return true
     end
--- function onTap(event)
---     js.x=  event.x
---     js.y=   event.y
---     print(event)
---     local phase = event.phase
---     if phase == 
---     print(phase)
---     print('x -->'.. event.x)
---     print('y -->'.. event.y)
 
---     local phase = event.phase
 
---     if ( "began" == phase ) then
---         js.x=  event.x
---         js.y=   event.y
-        
---     -- elseif ( "moved" == phase ) then
 
---     --     pr
-        
---     -- elseif ( "ended" == phase or "cancelled" == phase ) then
 
-        
---     -- end
-
---     -- return true
--- end
 function onTouch(event)
     local phase = event.phase
     --print(phase)
@@ -413,13 +404,42 @@ function onTouch(event)
         js.y=   event.y
     end
 
+    if (event.y > 40) then
+        js:visible()
+    else
+        js:invisible()
+    end
+
 end
 
+function setupMusic(event)
+    toPlay = not toPlay
+    if toPlay then
+        audio.play( musicTrack, { channel=1, loops=-1 } )
+        imgNotMusic.isVisible = false
+        imgMusic.isVisible =true
+    else         
+        audio.stop(1)
+        imgNotMusic.isVisible = true
+        imgMusic.isVisible =false
+    end
+    setup_music.save(toPlay)
+
+end
+
+function onTap(event)
+    if (event.y > 40) then
+        js:visible()
+    else
+        js:invisible()
+    end
+end
 
 function scene:create(event)
     
     Runtime:addEventListener( "touch", onTouch )
-    --Runtime:addEventListener( "tap", onTap )
+    
+    Runtime:addEventListener( "tap", onTap )
 
     local sceneGroup = self.view
  
@@ -431,6 +451,7 @@ function scene:create(event)
     js.x = -150
     js.y = -150
     js:activate()
+    --js:visible()
 
     --vamos criar grupo de exibição, e inserir no grupo de visualização da cena
     backGroup1 = display.newGroup()  
@@ -481,16 +502,33 @@ function scene:create(event)
     rocket.touchOffsetX = 0
     rocket.touchOffsetY = 0
 
+    local icon_music_dim = 26
+    imgMusic = display.newImageRect( sceneGroup, "resources/image/music_play.png", icon_music_dim*0.7695325, icon_music_dim )
+	imgMusic.x = display.contentCenterX +25
+    imgMusic.y = 25    
+    imgMusic.isVisible = false
+    
+    local sum_icon_music_dim= 2
+    imgNotMusic = display.newImageRect( sceneGroup, "resources/image/music_stop.png", icon_music_dim+sum_icon_music_dim, icon_music_dim+sum_icon_music_dim )
+	imgNotMusic.x = display.contentCenterX +25
+    imgNotMusic.y = 25
+    imgNotMusic.isVisible = false
+
     physics.addBody( rocket, 'dynamic', { radius=25, isSensor=true } )
     rocket.myName = nome_image.rocket
 
     scoreText = display.newText( "Score: " .. score, 240, 25, native.systemFont, 16 )
     scoreText:setFillColor(0.180, 0.65, 0.35  )
 
+    imgNotMusic:addEventListener('tap',setupMusic)
+    imgMusic:addEventListener('tap', setupMusic)
+
   --  rocket:addEventListener( "touch", dragRocket )
-    musicTrack = audio.loadSound('resources/music/music_game.mp3')    
-    musicImpact = audio.loadSound('resources/music/explosion.wav')
+    musicTrack = audio.loadStream('resources/music/music_game.mp3')    
+    musicImpact = audio.loadSound('resources/music/explosion.wav') 
+    musicGameOver = audio.loadSound('resources/music/game-over-1.wav')
     musicLife = audio.loadSound('resources/music/music_life.mp3')
+    
     
 end
 
@@ -511,8 +549,17 @@ function scene:show( event )
         background_loop_planet_movement = timer.performWithDelay(2, move_loop_planet, 0)
         gameLoopTimer = timer.performWithDelay( 100, gameLoop, 0 ) 
         jsLoop = timer.performWithDelay( 30, catchTimer, -1 )
+        toPlay = setup_music.load()
 
-        audio.play( musicTrack, { channel=1, loops=-1 } )
+        if toPlay then
+            audio.play( musicTrack, { channel=1, loops=-1 } )
+            imgNotMusic.isVisible = false
+            imgMusic.isVisible =true
+        else         
+            audio.stop(1)
+            imgNotMusic.isVisible = true
+            imgMusic.isVisible =false
+        end
         
     end
 end
@@ -521,17 +568,24 @@ function scene:hide( event )
  
     local sceneGroup = self.view
     local phase = event.phase
- 
+    print(phase .. "  teste")
     -- A primeira chamada ocorre quando a cena está prestes a ser ocultada
     if ( phase == "will" ) then
         
         print('entrou aqui will')
-        timer.cancel( background_loop_planet_movement )
-        timer.cancel( background_loop_movement )
+        if(background_loop_planet_movement) then
+            timer.cancel( background_loop_planet_movement )
+        end
+        if (background_loop_movement) then
+            timer.cancel( background_loop_movement )
+        end
         if (gameLoopTimer) then
             timer.cancel( gameLoopTimer )
         end
-        timer.cancel(jsLoop)
+        if (jsLoop) then
+            timer.cancel(jsLoop)
+        end
+        display.remove(sceneGroup)
         
     -- A segunda chamada ocorre imediatamente após a cena estar totalmente fora da tela.
     elseif ( phase == "did" ) then
@@ -552,10 +606,12 @@ end
 function scene:destroy( event )
  
     local sceneGroup = self.view
+    print('-------------passou aqui destroy-------------')
 
     audio.dispose( musicTrack )
     audio.dispose( musicImpact )
     audio.dispose( musicLife )
+    audio.dispose( musicGameOver )
 end
 
 

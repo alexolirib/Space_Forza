@@ -15,6 +15,16 @@ function Joystick.new( innerRadius, outerRadius )
     joystick:setFillColor( .8,.8,.8 )
     joystick.alpha=0.5
 
+    
+
+    function joyGroup:visible()
+        joystick.alpha=0.5
+    end
+
+    function joyGroup:invisible()
+        joystick.alpha=0
+    end
+
     -- for easy reference later:
     joyGroup.joystick = joystick
     
@@ -34,6 +44,8 @@ function Joystick.new( innerRadius, outerRadius )
     function joyGroup:getDistance()
     	return distance/stopRadius
     end
+
+    
     
     function joystick:touch(event)
         local phase = event.phase

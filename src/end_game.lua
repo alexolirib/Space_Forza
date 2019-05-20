@@ -2,6 +2,10 @@
 local composer = require( "composer" )
 
 local scene = composer.newScene()
+local musicEndGame
+local toPlay = false
+local setup_music = require('src.setup_music')
+local selectMenuSound
 
 -- -----------------------------------------------------------------------------------
 -- Code outside of the scene event functions below will only be executed ONCE unless
@@ -33,6 +37,20 @@ end
 
 local function saveScores()
 
+	for primeiro = 10, 1, -1
+	do
+		for segundo = 10, 1, -1
+		do
+			if (primeiro ~= segundo) then
+				if (scoresTable[primeiro] == scoresTable[segundo]) then
+					if(scoresTable[primeiro] ~= 0) then
+						return true
+					end
+				end
+			end
+		end
+	end
+	print('salvando....')
 	for i = #scoresTable, 11, -1 do
 		table.remove( scoresTable, i )
 	end
@@ -46,12 +64,17 @@ local function saveScores()
 end
 
 
-
 local function gotoMenu()
+	if toPlay then
+        audio.play(selectMenuSound) 
+    end
 	composer.gotoScene( "src.menu", { time=600, effect="crossFade" } )
 end
 
 local function goToGame()
+	if toPlay then
+        audio.play(selectMenuSound) 
+    end
 	composer.gotoScene( "src.game", { time=800, effect="zoomInOutFade" } )
 end
 
@@ -59,30 +82,29 @@ function scene:create( event )
 
     local sceneGroup = self.view
     -- Code here runs when the scene is first created but has not yet appeared on screen
-
+	
     -- Load the previous scores
     loadScores()
 
 
     local pontuacao = composer.getVariable( "finalScore" )
     
-        print('1ª  -  ' .. pontuacao)
+    print('1ª  -  ' .. pontuacao)
     if (pontuacao == nil) then
         pontuacao = ""
     end 
 
     -- Insert the saved score from the last game into the table, then reset it
     table.insert( scoresTable, composer.getVariable( "finalScore" ) )
-    composer.setVariable( "finalScore", 0 )
+	composer.setVariable( "finalScore", 0 )
 
     -- Sort the table entries from highest to lowest
     local function compare( a, b )
         return a > b
     end
-    table.sort( scoresTable, compare )
-
-
-
+	table.sort( scoresTable, compare )
+	
+	
 
     -- Save the scores
     saveScores()
@@ -108,21 +130,30 @@ function scene:create( event )
     local btn_menu = display.newImageRect( sceneGroup, "resources/image/btn_menu.png", size_btn_menu*3.28, size_btn_menu  )
 	btn_menu.x = display.contentCenterX
     btn_menu.y = btn_game_novamente.y  + 70
-    btn_menu:addEventListener('tap', gotoMenu)
+	btn_menu:addEventListener('tap', gotoMenu)
+    selectMenuSound = audio.loadSound('resources/music/music_click.mp3')
+	musicEndGame = audio.loadStream('resources/music/music_game_over.mp3')
 end
 
 
 -- show()
 function scene:show( event )
-
+	
 	local sceneGroup = self.view
 	local phase = event.phase
-
+	
 	if ( phase == "will" ) then
+		print('alexandre passanfo aquiiiiiiiiiiiiiiiiiiiiiiiii')
 		-- Code here runs when the scene is still off screen (but is about to come on screen)
 
 	elseif ( phase == "did" ) then
 		-- Code here runs when the scene is entirely on screen
+		toPlay = setup_music.load()
+		if toPlay then
+            audio.play( musicEndGame, { channel=1, loops=-1 } )			
+        else         
+			audio.stop(1)			
+        end
 
 	end
 end
@@ -140,6 +171,7 @@ function scene:hide( event )
 	elseif ( phase == "did" ) then
 		-- Code here runs immediately after the scene goes entirely off screen
 		composer.removeScene( "src.end_game" )
+        audio.stop( 1 )
 	end
 end
 
@@ -149,7 +181,8 @@ function scene:destroy( event )
 
 	local sceneGroup = self.view
 	-- Code here runs prior to the removal of scene's view
-
+	audio.dispose( musicEndGame )
+    audio.dispose(selectMenuSound)
 end
 
 
