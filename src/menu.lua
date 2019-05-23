@@ -53,10 +53,10 @@ function scene:create( event )
 	background.x = display.contentCenterX
     background.y = display.contentCenterY
     
-    log_dim = 220
-    local title = display.newImageRect( sceneGroup, "resources/image/logo1.png", log_dim, log_dim/2.5 )
+    log_dim = 110
+    local title = display.newImageRect( sceneGroup, "resources/image/logo3.png", log_dim/0.8, log_dim )
 	title.x = display.contentCenterX
-    title.y = 85
+    title.y = 106
     
     local btn_play = display.newImageRect( sceneGroup, "resources/image/btn_play.png", 148, 45 )
     btn_play.x = display.contentCenterX
